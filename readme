@@ -1,0 +1,48 @@
+# ============================================================
+# IChem 许可证配置说明
+# ============================================================
+#
+# 问题：运行 ./IChem 时报错 "Cannot open licence file"
+#
+# 原因：IChem 二进制文件内部硬编码了许可证文件的绝对路径，
+#       该路径为：/home/wjl/data/git-hub模型/ichem/IChem_2024-09-19_Lucien.lic
+#       可通过以下命令确认程序实际查找的路径：
+#         strace -e trace=openat ./IChem licence 2>&1 | grep -i lic
+#       程序不会读取 ICHEM_LIC 等环境变量指定的路径，
+#       必须在该硬编码路径下存放许可证文件才能生效。
+#
+# 解决步骤：
+#   1. 创建程序所需的目录（目录名含中文，注意编码）：
+#        mkdir -p "/home/wjl/data/git-hub模型/ichem/"
+#
+#   2. 将已有的许可证文件复制到该路径并重命名：
+#        cp /data/wjl/git_hub_model/ichem/IChem.lic \
+#           "/home/wjl/data/git-hub模型/ichem/IChem_2024-09-19_Lucien.lic"
+#
+#   3. 验证配置是否成功（能正常输出帮助信息即为成功）：
+#        ./IChem licence
+#
+# 注：许可证有效期至 2027/3/19，密钥已存于 IChem.lic 和 licence.lic。
+# ============================================================
+# strings用于从 二进制文件 或其他不可读的文件中提取出 可打印的 ASCII 文本字符串。
+# | 管道符用于将搜索得到的结果传递给 grep 命令进行进一步处理。
+# grep用于搜索文本，-i选项表示忽略大小写，'licence'是要搜索的关键词。并打印含有该关键词的行。
+strings ./IChem | grep -i licence
+
+#配置IChem环境变量
+ICHEM_DIR="/home/wjl/data/git_hub_model/ichem"; export ICHEM_DIR
+
+# 配置密钥的环境
+ICHEM_LIC=${ICHEM_DIR}/Ichem.lic; export ICHEM_LIC
+# 查看环境是否配置成功
+echo $ICHEM_DIR
+
+# 确保 IChem 可执行文件有执行权限：
+chmod +x $ICHEM_DIR/IChem
+
+
+# 首先提取蛋白口袋随后得到口袋的点云
+./IChem volsite /home/wjl/data/git_hub_model/ichem/input/sting/6mx0.mol2
+./IChem -logf 2rh1_ints.txt -type CENT ints /home/wjl/data/git-hub模型/ichem/7v1t.mol2 /home/wjl/data/git-hub模型/ichem/7v1t_lig.mol2
+./IChem volsite xxx.mol2
+./IChem -logf 2rh1_ints.txt -type CENT ints prot.mol2 lig.mol2
